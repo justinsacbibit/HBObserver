@@ -6,9 +6,8 @@ using System.Threading.Tasks;
 
 namespace Observer.Events
 {
-    public interface IEvent
+    public interface IEventQueue : IObservable<IEnumerable<Event>>
     {
-        string Message { get; }
-        string Details { get; }
+        void EnqueueIfEnabled(Event event_);
     }
 }

@@ -77,14 +77,10 @@
     <Compile Include="Channels\Channel.cs" />
     <Compile Include="Channels\Pushbullet\PushbulletChannel.cs" />
     <Compile Include="Commands\ICommand.cs" />
-    <Compile Include="Events\BotStartedEvent.cs" />
-    <Compile Include="Events\BotStoppedEvent.cs" />
-    <Compile Include="Events\DiedEvent.cs" />
     <Compile Include="Events\EventQueue.cs" />
-    <Compile Include="Events\IEvent.cs" />
+    <Compile Include="Events\Event.cs" />
     <Compile Include="Events\IEventQueue.cs" />
-    <Compile Include="Settings\Settings.cs" />
-    <Compile Include="Settings\SettingsManager.cs" />
+    <Compile Include="Settings\ObserverSettings.cs" />
     <Compile Include="Infrastructure\Unsubscriber.cs" />
     <Compile Include="Infrastructure\Logger.cs" />
     <Compile Include="Infrastructure\WebRequestExtensions.cs" />

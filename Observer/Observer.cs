@@ -2,6 +2,7 @@
 using Observer.Channels.Pushbullet;
 using Observer.Events;
 using Observer.Infrastructure;
+using Observer.Settings;
 using Styx;
 using Styx.Common;
 using Styx.CommonBot;
@@ -41,18 +42,18 @@ namespace Observer
 
         #region Properties
 
-        private static LocalPlayer Me { get { return StyxWoW.Me; } }
-        private Form _settingsForm { get; set; }
-        private bool _pluginEnabled { get { return PluginManager.Plugins.Find(x => x.Name == Name).Enabled; } }
-        private bool _loggedIn { get; set; }
+        internal static LocalPlayer Me { get { return StyxWoW.Me; } }
+        private SettingsForm _settingsForm;
+        private bool _pluginEnabled;
+        private bool _loggedIn;
 
         // Ten seconds before adding a new event of the same type
         private readonly TimeSpan _generalTimeInterval = new TimeSpan(0, 0, 10);
 
         private DateTime _lastStuckTime = DateTime.MinValue;
 
-        private IList<Channel> _channels { get; set; }
-        private IEventQueue _eventQueue { get; set; }
+        private IDictionary<Channel, IDisposable> _channels;
+        private IEventQueue _eventQueue;
 
         #endregion
 
@@ -60,18 +61,35 @@ namespace Observer
 
         public ObserverPlugin()
         {
-            this._settingsForm = new SettingsForm();
-            this._loggedIn = StyxWoW.IsInGame;
-            this._eventQueue = new EventQueue();
-            this._channels = new List<Channel>();
+            _settingsForm = new SettingsForm();
+            _loggedIn = StyxWoW.IsInGame;
+            _eventQueue = new EventQueue();
+            _channels = new Dictionary<Channel, IDisposable>();
 
-            Channel channel = new PushbulletChannel("gMFk52PIPaUQDDy6FKIBFyM5iFl4Dhkw");
-            this._channels.Add(channel);
-            this._eventQueue.Subscribe(channel);
+            SettingsDidCommit();
 
             if (_pluginEnabled)
             {
                 OnEnable();
+            }
+        }
+
+        private void SettingsDidCommit()
+        {
+            if (ObserverSettings.SharedInstance.PushbulletEnabled)
+            {
+                Channel channel = new PushbulletChannel(ObserverSettings.SharedInstance.PushbulletAccessToken);
+                _channels.Add(channel, _eventQueue.Subscribe(channel));
+            }
+            else
+            {
+                var kvp = _channels.FirstOrDefault(x => x.Key as PushbulletChannel != null);
+                if (kvp.Equals(default(KeyValuePair<Channel, IDisposable>)))
+                {
+                    return;
+                }
+                kvp.Value.Dispose();
+                _channels.Remove(kvp.Key);
             }
         }
 
@@ -93,18 +111,25 @@ namespace Observer
         /// </summary>
         public override void OnButtonPress()
         {
-            this._settingsForm.Show();
-            this._settingsForm.Focus();
+            _settingsForm.ShowDialog();
+            if (_settingsForm.DialogResult == DialogResult.OK)
+            {
+                SettingsDidCommit();
+            }
         }
 
         public override void OnEnable()
         {
+            _pluginEnabled = true;
             AttachEvents();
+            Logger.Log("Observer initialized!");
         }
 
         public override void OnDisable()
         {
+            _pluginEnabled = false;
             DetachEvents();
+            Logger.Log("Observer disabled!");
         }
 
         #endregion
@@ -115,14 +140,16 @@ namespace Observer
             {
                 _loggedIn = false;
 
-                // TODO: Send event
+                _eventQueue.EnqueueIfEnabled(Event.LOG_OUT_IDENTIFIER, "Not in game!");
             }
             else if (!_loggedIn && StyxWoW.IsInGame)
             {
                 _loggedIn = true;
 
-                // TODO: Send event
+                _eventQueue.EnqueueIfEnabled(Event.LOG_IN_IDENTIFIER, "In game!");
             }
+
+
         }
 
         #region Events
@@ -133,6 +160,8 @@ namespace Observer
             BotEvents.OnBotStarted += BotEvents_OnBotStarted;
             Logging.OnLogMessage += Logging_OnLogMessage;
             Chat.Whisper += ChatEvents_Whisper;
+            Lua.Events.DetachEvent("CHAT_MSG_BN_WHISPER", LuaEvents_BattleNetWhisper);
+            Lua.Events.AttachEvent("CHAT_MSG_BN_WHISPER", LuaEvents_BattleNetWhisper);
             BotEvents.Player.OnPlayerDied += PlayerEvents_OnPlayerDied;
             BotEvents.Player.OnLevelUp += PlayerEvents_OnLevelUp;
             BotEvents.Battleground.OnBattlegroundEntered += BattlegroundEvents_OnBattlegroundEntered;
@@ -145,6 +174,7 @@ namespace Observer
             BotEvents.OnBotStarted -= BotEvents_OnBotStarted;
             Logging.OnLogMessage -= Logging_OnLogMessage;
             Chat.Whisper -= ChatEvents_Whisper;
+            Lua.Events.DetachEvent("CHAT_MSG_BN_WHISPER", LuaEvents_BattleNetWhisper);
             BotEvents.Player.OnPlayerDied -= PlayerEvents_OnPlayerDied;
             BotEvents.Player.OnLevelUp -= PlayerEvents_OnLevelUp;
             BotEvents.Battleground.OnBattlegroundEntered -= BattlegroundEvents_OnBattlegroundEntered;
@@ -153,27 +183,27 @@ namespace Observer
 
         private void BattlegroundEvents_OnBattlegroundEntered(BattlegroundType type)
         {
-            // TODO: Send event
+            _eventQueue.EnqueueIfEnabled(Event.BG_ENTER_IDENTIFIER, "Entered battleground");
         }
 
         private void BattlegroundEvents_OnBattlegroundLeft(EventArgs args)
         {
-            // TODO: Send event
+            _eventQueue.EnqueueIfEnabled(Event.BG_LEFT_IDENTIFIER, "Left battleground");
         }
 
         private void BotEvents_OnBotStopped(EventArgs args)
         {
-            _eventQueue.Enqueue(new BotStoppedEvent());
+            _eventQueue.EnqueueIfEnabled(Event.BOT_STOP_IDENTIFIER, "Bot stopped!");
         }
 
         private void BotEvents_OnBotStarted(EventArgs args)
         {
-            _eventQueue.Enqueue(new BotStartedEvent());
+            _eventQueue.EnqueueIfEnabled(Event.BOT_START_IDENTIFIER, "Bot started!");
         }
 
         private void PlayerEvents_OnLevelUp(BotEvents.Player.LevelUpEventArgs args)
         {
-            // TODO: Send event
+            _eventQueue.EnqueueIfEnabled(Event.LEVEL_UP_IDENTIFIER, "Leveled from {0} to {1}!", args.OldLevel, args.NewLevel);
         }
 
         private void Logging_OnLogMessage(System.Collections.ObjectModel.ReadOnlyCollection<Logging.LogMessage> messages)
@@ -192,15 +222,34 @@ namespace Observer
 
         private void PlayerEvents_OnPlayerDied()
         {
-            // TODO: send event
+            if (!Battlegrounds.IsInsideBattleground)
+            {
+                _eventQueue.EnqueueIfEnabled(Event.DIED_IDENTIFIER, "You died!");
+            }
         }
 
         private void ChatEvents_Whisper(Chat.ChatWhisperEventArgs e)
         {
-            Logger.Log("Got a whisper from {0}{1}: \"{2}\"", e.Status == "GM" ? "Game Master " : "", e.Author, e.Message);
-            // TODO: send event
+            bool gmMessage = e.Status == "GM";
+            _eventQueue.EnqueueIfEnabled(Event.WHISPER_IDENTIFIER, "Whisper from {0}{1}: \"{2}\"", gmMessage ? "Game Master " : "", e.Author, e.Message);
+        }
+
+        private void LuaEvents_BattleNetWhisper(object sender, LuaEventArgs e)
+        {
+            string message = e.Args[0].ToString();
+            string author = Lua.GetReturnValues(string.Format("return BNGetFriendInfoByID({0})", e.Args[12].ToString()))[2];
+
+            _eventQueue.EnqueueIfEnabled(Event.BNET_WHISPER_IDENTIFIER, "Bnet whisper from {0}: \"{1}\"", author, message);
         }
 
         #endregion
+    }
+
+    internal static class EventQueueExtensions
+    {
+        internal static void EnqueueIfEnabled(this IEventQueue eventQueue, string identifier, string format, params object[] args)
+        {
+            eventQueue.EnqueueIfEnabled(new Event(identifier, string.Format(format, args)));
+        }
     }
 }

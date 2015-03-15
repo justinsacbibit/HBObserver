@@ -31,19 +31,36 @@
             this.components = new System.ComponentModel.Container();
             this.FormHeader = new System.Windows.Forms.Label();
             this.FormHeaderClose = new System.Windows.Forms.Label();
-            this.vt = new VerticalTabs();
+            this.lblVersion = new System.Windows.Forms.Label();
+            this.tooltipHandler = new System.Windows.Forms.ToolTip(this.components);
+            this.vt = new Observer.VerticalTabs();
             this.tabAbout = new System.Windows.Forms.TabPage();
             this.tableAbout = new System.Windows.Forms.TableLayoutPanel();
-            this.rtfAbout = new System.Windows.Forms.RichTextBox();
             this.btnSupport = new System.Windows.Forms.Button();
+            this.rtfAbout = new System.Windows.Forms.RichTextBox();
             this.lblAboutCaption = new System.Windows.Forms.Label();
             this.btnPurchase = new System.Windows.Forms.Button();
             this.tabSettings = new System.Windows.Forms.TabPage();
-            this.lblVersion = new System.Windows.Forms.Label();
-            this.tooltipHandler = new System.Windows.Forms.ToolTip(this.components);
+            this.botEventsGroupBox = new System.Windows.Forms.GroupBox();
+            this.botEventsCheckedListBox = new System.Windows.Forms.CheckedListBox();
+            this.playerEventsGroupBox = new System.Windows.Forms.GroupBox();
+            this.playerEventsCheckedListBox = new System.Windows.Forms.CheckedListBox();
+            this.chatEventsGroupBox = new System.Windows.Forms.GroupBox();
+            this.chatEventsCheckedListBox = new System.Windows.Forms.CheckedListBox();
+            this.tabAccounts = new System.Windows.Forms.TabPage();
+            this.pushbulletGroupBox = new System.Windows.Forms.GroupBox();
+            this.pushbulletAccessTokenLabel = new System.Windows.Forms.Label();
+            this.pushbulletTextBox = new System.Windows.Forms.TextBox();
+            this.pushbulletEnabledCheckbox = new System.Windows.Forms.CheckBox();
             this.vt.SuspendLayout();
             this.tabAbout.SuspendLayout();
             this.tableAbout.SuspendLayout();
+            this.tabSettings.SuspendLayout();
+            this.botEventsGroupBox.SuspendLayout();
+            this.playerEventsGroupBox.SuspendLayout();
+            this.chatEventsGroupBox.SuspendLayout();
+            this.tabAccounts.SuspendLayout();
+            this.pushbulletGroupBox.SuspendLayout();
             this.SuspendLayout();
             // 
             // FormHeader
@@ -68,17 +85,32 @@
             this.FormHeaderClose.ForeColor = System.Drawing.Color.MistyRose;
             this.FormHeaderClose.Location = new System.Drawing.Point(1000, 4);
             this.FormHeaderClose.Name = "FormHeaderClose";
-            this.FormHeaderClose.Size = new System.Drawing.Size(22, 20);
+            this.FormHeaderClose.Size = new System.Drawing.Size(19, 17);
             this.FormHeaderClose.TabIndex = 1;
             this.FormHeaderClose.Text = "X";
             this.FormHeaderClose.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             this.tooltipHandler.SetToolTip(this.FormHeaderClose, "Close Window");
+            // 
+            // lblVersion
+            // 
+            this.lblVersion.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.lblVersion.BackColor = System.Drawing.SystemColors.ButtonFace;
+            this.lblVersion.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.lblVersion.Font = new System.Drawing.Font("Verdana", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblVersion.ForeColor = System.Drawing.Color.SteelBlue;
+            this.lblVersion.Location = new System.Drawing.Point(8, 468);
+            this.lblVersion.Name = "lblVersion";
+            this.lblVersion.Size = new System.Drawing.Size(190, 26);
+            this.lblVersion.TabIndex = 3;
+            this.lblVersion.Text = "Version 1.0.0.0";
+            this.lblVersion.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // vt
             // 
             this.vt.Alignment = System.Windows.Forms.TabAlignment.Left;
             this.vt.Controls.Add(this.tabAbout);
             this.vt.Controls.Add(this.tabSettings);
+            this.vt.Controls.Add(this.tabAccounts);
             this.vt.Dock = System.Windows.Forms.DockStyle.Fill;
             this.vt.DrawMode = System.Windows.Forms.TabDrawMode.OwnerDrawFixed;
             this.vt.Font = new System.Drawing.Font("Verdana", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -114,8 +146,8 @@
             // 
             // tableAbout
             // 
-            this.tableAbout.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-            | System.Windows.Forms.AnchorStyles.Left)
+            this.tableAbout.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.tableAbout.ColumnCount = 3;
             this.tableAbout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
@@ -133,18 +165,6 @@
             this.tableAbout.Size = new System.Drawing.Size(762, 401);
             this.tableAbout.TabIndex = 9;
             // 
-            // rtfAbout
-            // 
-            this.rtfAbout.BackColor = System.Drawing.Color.WhiteSmoke;
-            this.rtfAbout.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.tableAbout.SetColumnSpan(this.rtfAbout, 3);
-            this.rtfAbout.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.rtfAbout.Location = new System.Drawing.Point(3, 45);
-            this.rtfAbout.Name = "rtfAbout";
-            this.rtfAbout.Size = new System.Drawing.Size(756, 353);
-            this.rtfAbout.TabIndex = 7;
-            this.rtfAbout.Text = "";
-            // 
             // btnSupport
             // 
             this.btnSupport.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -159,6 +179,18 @@
             this.btnSupport.UseVisualStyleBackColor = true;
             this.btnSupport.Visible = false;
             this.btnSupport.Click += new System.EventHandler(this.btnSupport_Click);
+            // 
+            // rtfAbout
+            // 
+            this.rtfAbout.BackColor = System.Drawing.Color.WhiteSmoke;
+            this.rtfAbout.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.tableAbout.SetColumnSpan(this.rtfAbout, 3);
+            this.rtfAbout.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.rtfAbout.Location = new System.Drawing.Point(3, 45);
+            this.rtfAbout.Name = "rtfAbout";
+            this.rtfAbout.Size = new System.Drawing.Size(756, 353);
+            this.rtfAbout.TabIndex = 7;
+            this.rtfAbout.Text = "";
             // 
             // lblAboutCaption
             // 
@@ -189,6 +221,9 @@
             // 
             // tabSettings
             // 
+            this.tabSettings.Controls.Add(this.botEventsGroupBox);
+            this.tabSettings.Controls.Add(this.playerEventsGroupBox);
+            this.tabSettings.Controls.Add(this.chatEventsGroupBox);
             this.tabSettings.Location = new System.Drawing.Point(204, 4);
             this.tabSettings.Name = "tabSettings";
             this.tabSettings.Padding = new System.Windows.Forms.Padding(3);
@@ -197,21 +232,129 @@
             this.tabSettings.Text = "Settings";
             this.tabSettings.UseVisualStyleBackColor = true;
             // 
-            // lblVersion
+            // botEventsGroupBox
             // 
-            this.lblVersion.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.lblVersion.BackColor = System.Drawing.SystemColors.ButtonFace;
-            this.lblVersion.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.lblVersion.Font = new System.Drawing.Font("Verdana", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblVersion.ForeColor = System.Drawing.Color.SteelBlue;
-            this.lblVersion.Location = new System.Drawing.Point(8, 468);
-            this.lblVersion.Name = "lblVersion";
-            this.lblVersion.Size = new System.Drawing.Size(190, 26);
-            this.lblVersion.TabIndex = 3;
-            this.lblVersion.Text = "Version 1.0.0.0";
-            this.lblVersion.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.botEventsGroupBox.Controls.Add(this.botEventsCheckedListBox);
+            this.botEventsGroupBox.Location = new System.Drawing.Point(299, 6);
+            this.botEventsGroupBox.Name = "botEventsGroupBox";
+            this.botEventsGroupBox.Size = new System.Drawing.Size(373, 148);
+            this.botEventsGroupBox.TabIndex = 2;
+            this.botEventsGroupBox.TabStop = false;
+            this.botEventsGroupBox.Text = "Bot Events";
             // 
-            // Settings
+            // botEventsCheckedListBox
+            // 
+            this.botEventsCheckedListBox.CheckOnClick = true;
+            this.botEventsCheckedListBox.FormattingEnabled = true;
+            this.botEventsCheckedListBox.Items.AddRange(new object[] {
+            "Start",
+            "Stop"});
+            this.botEventsCheckedListBox.Location = new System.Drawing.Point(7, 24);
+            this.botEventsCheckedListBox.Name = "botEventsCheckedListBox";
+            this.botEventsCheckedListBox.SelectionMode = System.Windows.Forms.SelectionMode.None;
+            this.botEventsCheckedListBox.Size = new System.Drawing.Size(360, 118);
+            this.botEventsCheckedListBox.TabIndex = 0;
+            // 
+            // playerEventsGroupBox
+            // 
+            this.playerEventsGroupBox.Controls.Add(this.playerEventsCheckedListBox);
+            this.playerEventsGroupBox.Location = new System.Drawing.Point(6, 169);
+            this.playerEventsGroupBox.Name = "playerEventsGroupBox";
+            this.playerEventsGroupBox.Size = new System.Drawing.Size(287, 148);
+            this.playerEventsGroupBox.TabIndex = 1;
+            this.playerEventsGroupBox.TabStop = false;
+            this.playerEventsGroupBox.Text = "Player Events";
+            // 
+            // playerEventsCheckedListBox
+            // 
+            this.playerEventsCheckedListBox.CheckOnClick = true;
+            this.playerEventsCheckedListBox.FormattingEnabled = true;
+            this.playerEventsCheckedListBox.Items.AddRange(new object[] {
+            "Battleground join",
+            "Battleground leave",
+            "Death",
+            "Level up",
+            "Log in",
+            "Log out"});
+            this.playerEventsCheckedListBox.Location = new System.Drawing.Point(7, 24);
+            this.playerEventsCheckedListBox.Name = "playerEventsCheckedListBox";
+            this.playerEventsCheckedListBox.SelectionMode = System.Windows.Forms.SelectionMode.None;
+            this.playerEventsCheckedListBox.Size = new System.Drawing.Size(274, 118);
+            this.playerEventsCheckedListBox.TabIndex = 0;
+            // 
+            // chatEventsGroupBox
+            // 
+            this.chatEventsGroupBox.Controls.Add(this.chatEventsCheckedListBox);
+            this.chatEventsGroupBox.Location = new System.Drawing.Point(6, 6);
+            this.chatEventsGroupBox.Name = "chatEventsGroupBox";
+            this.chatEventsGroupBox.Size = new System.Drawing.Size(287, 148);
+            this.chatEventsGroupBox.TabIndex = 0;
+            this.chatEventsGroupBox.TabStop = false;
+            this.chatEventsGroupBox.Text = "Chat Events";
+            // 
+            // chatEventsCheckedListBox
+            // 
+            this.chatEventsCheckedListBox.CheckOnClick = true;
+            this.chatEventsCheckedListBox.FormattingEnabled = true;
+            this.chatEventsCheckedListBox.Items.AddRange(new object[] {
+            "Whisper",
+            "Battle.net whisper"});
+            this.chatEventsCheckedListBox.Location = new System.Drawing.Point(7, 24);
+            this.chatEventsCheckedListBox.Name = "chatEventsCheckedListBox";
+            this.chatEventsCheckedListBox.SelectionMode = System.Windows.Forms.SelectionMode.None;
+            this.chatEventsCheckedListBox.Size = new System.Drawing.Size(274, 118);
+            this.chatEventsCheckedListBox.TabIndex = 0;
+            // 
+            // tabAccounts
+            // 
+            this.tabAccounts.Controls.Add(this.pushbulletGroupBox);
+            this.tabAccounts.Location = new System.Drawing.Point(204, 4);
+            this.tabAccounts.Name = "tabAccounts";
+            this.tabAccounts.Padding = new System.Windows.Forms.Padding(3);
+            this.tabAccounts.Size = new System.Drawing.Size(822, 463);
+            this.tabAccounts.TabIndex = 3;
+            this.tabAccounts.Text = "Accounts";
+            this.tabAccounts.UseVisualStyleBackColor = true;
+            // 
+            // pushbulletGroupBox
+            // 
+            this.pushbulletGroupBox.Controls.Add(this.pushbulletAccessTokenLabel);
+            this.pushbulletGroupBox.Controls.Add(this.pushbulletTextBox);
+            this.pushbulletGroupBox.Controls.Add(this.pushbulletEnabledCheckbox);
+            this.pushbulletGroupBox.Location = new System.Drawing.Point(6, 6);
+            this.pushbulletGroupBox.Name = "pushbulletGroupBox";
+            this.pushbulletGroupBox.Size = new System.Drawing.Size(357, 114);
+            this.pushbulletGroupBox.TabIndex = 0;
+            this.pushbulletGroupBox.TabStop = false;
+            this.pushbulletGroupBox.Text = "Pushbullet";
+            // 
+            // pushbulletAccessTokenLabel
+            // 
+            this.pushbulletAccessTokenLabel.AutoSize = true;
+            this.pushbulletAccessTokenLabel.Location = new System.Drawing.Point(7, 52);
+            this.pushbulletAccessTokenLabel.Name = "pushbulletAccessTokenLabel";
+            this.pushbulletAccessTokenLabel.Size = new System.Drawing.Size(104, 17);
+            this.pushbulletAccessTokenLabel.TabIndex = 2;
+            this.pushbulletAccessTokenLabel.Text = "Access Token";
+            // 
+            // pushbulletTextBox
+            // 
+            this.pushbulletTextBox.Location = new System.Drawing.Point(7, 72);
+            this.pushbulletTextBox.Name = "pushbulletTextBox";
+            this.pushbulletTextBox.Size = new System.Drawing.Size(344, 24);
+            this.pushbulletTextBox.TabIndex = 1;
+            // 
+            // pushbulletEnabledCheckbox
+            // 
+            this.pushbulletEnabledCheckbox.AutoSize = true;
+            this.pushbulletEnabledCheckbox.Location = new System.Drawing.Point(7, 24);
+            this.pushbulletEnabledCheckbox.Name = "pushbulletEnabledCheckbox";
+            this.pushbulletEnabledCheckbox.Size = new System.Drawing.Size(82, 21);
+            this.pushbulletEnabledCheckbox.TabIndex = 0;
+            this.pushbulletEnabledCheckbox.Text = "Enabled";
+            this.pushbulletEnabledCheckbox.UseVisualStyleBackColor = true;
+            // 
+            // SettingsForm
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.BackColor = System.Drawing.Color.White;
@@ -224,13 +367,20 @@
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
-            this.Name = "Settings";
+            this.Name = "SettingsForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Load += new System.EventHandler(this.Settings_Load);
             this.vt.ResumeLayout(false);
             this.tabAbout.ResumeLayout(false);
             this.tableAbout.ResumeLayout(false);
             this.tableAbout.PerformLayout();
+            this.tabSettings.ResumeLayout(false);
+            this.botEventsGroupBox.ResumeLayout(false);
+            this.playerEventsGroupBox.ResumeLayout(false);
+            this.chatEventsGroupBox.ResumeLayout(false);
+            this.tabAccounts.ResumeLayout(false);
+            this.pushbulletGroupBox.ResumeLayout(false);
+            this.pushbulletGroupBox.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -250,5 +400,16 @@
         private System.Windows.Forms.RichTextBox rtfAbout;
         private System.Windows.Forms.Label lblAboutCaption;
         private System.Windows.Forms.Button btnPurchase;
+        private System.Windows.Forms.TabPage tabAccounts;
+        private System.Windows.Forms.GroupBox pushbulletGroupBox;
+        private System.Windows.Forms.Label pushbulletAccessTokenLabel;
+        private System.Windows.Forms.TextBox pushbulletTextBox;
+        private System.Windows.Forms.CheckBox pushbulletEnabledCheckbox;
+        private System.Windows.Forms.GroupBox botEventsGroupBox;
+        private System.Windows.Forms.CheckedListBox botEventsCheckedListBox;
+        private System.Windows.Forms.GroupBox playerEventsGroupBox;
+        private System.Windows.Forms.CheckedListBox playerEventsCheckedListBox;
+        private System.Windows.Forms.GroupBox chatEventsGroupBox;
+        private System.Windows.Forms.CheckedListBox chatEventsCheckedListBox;
     }
 }

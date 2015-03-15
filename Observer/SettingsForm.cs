@@ -22,11 +22,16 @@ using Styx.Plugins;
 using Styx.Pathing;
 using Styx.WoWInternals.World;
 
+using Observer.Settings;
+using Observer.Infrastructure;
+using System.Linq.Expressions;
+
 namespace Observer
 {
     public partial class SettingsForm : Form
     {
         #region FormInitialize
+
         public SettingsForm()
         {
             InitializeComponent();
@@ -56,24 +61,40 @@ namespace Observer
 
         private void Settings_Load(object sender, EventArgs e)
         {
-            // Set the version to display on the label
             Version ver = ObserverPlugin.PluginVersion;
             lblVersion.Text = String.Format("v{0}.{1}.{2}.{3}", ver.Major, ver.Minor, ver.Build, ver.Revision);
 
-            // Load the RTF resource for the About box. Change PluginSample to whatever your project name is
             rtfAbout.Rtf = Resources.About;
 
-            // Load user settings
             InitSettings();
         }
+
         #endregion
 
         #region Settings
+
         /// <summary>
         /// Load any settings here
         /// </summary>
         private void InitSettings()
         {
+            // Channels
+            pushbulletEnabledCheckbox.Checked = ObserverSettings.SharedInstance.PushbulletEnabled;
+            pushbulletTextBox.Text = ObserverSettings.SharedInstance.PushbulletAccessToken;
+
+            // Events
+            chatEventsCheckedListBox.SetItemChecked(0, ObserverSettings.SharedInstance.NotifyOnWhisper);
+            chatEventsCheckedListBox.SetItemChecked(1, ObserverSettings.SharedInstance.NotifyOnBNWhisper);
+
+            playerEventsCheckedListBox.SetItemChecked(0, ObserverSettings.SharedInstance.NotifyOnBattlegroundEnter);
+            playerEventsCheckedListBox.SetItemChecked(1, ObserverSettings.SharedInstance.NotifyOnBattlegroundExit);
+            playerEventsCheckedListBox.SetItemChecked(2, ObserverSettings.SharedInstance.NotifyOnDeath);
+            playerEventsCheckedListBox.SetItemChecked(3, ObserverSettings.SharedInstance.NotifyOnLevelUp);
+            playerEventsCheckedListBox.SetItemChecked(4, ObserverSettings.SharedInstance.NotifyOnLogIn);
+            playerEventsCheckedListBox.SetItemChecked(5, ObserverSettings.SharedInstance.NotifyOnLogOut);
+
+            botEventsCheckedListBox.SetItemChecked(0, ObserverSettings.SharedInstance.NotifyOnBotStart);
+            botEventsCheckedListBox.SetItemChecked(1, ObserverSettings.SharedInstance.NotifyOnBotStop);
         }
 
         /// <summary>
@@ -81,7 +102,26 @@ namespace Observer
         /// </summary>
         private void CommitSettings()
         {
+            ObserverSettings.SharedInstance.PushbulletEnabled = pushbulletEnabledCheckbox.Checked;
+            ObserverSettings.SharedInstance.PushbulletAccessToken = pushbulletTextBox.Text;
+
+            ObserverSettings.SharedInstance.NotifyOnWhisper = chatEventsCheckedListBox.GetItemChecked(0);
+            ObserverSettings.SharedInstance.NotifyOnBNWhisper = chatEventsCheckedListBox.GetItemChecked(1);
+
+            ObserverSettings.SharedInstance.NotifyOnBattlegroundEnter = playerEventsCheckedListBox.GetItemChecked(0);
+            ObserverSettings.SharedInstance.NotifyOnBattlegroundExit = playerEventsCheckedListBox.GetItemChecked(1);
+            ObserverSettings.SharedInstance.NotifyOnDeath = playerEventsCheckedListBox.GetItemChecked(2);
+            ObserverSettings.SharedInstance.NotifyOnLevelUp = playerEventsCheckedListBox.GetItemChecked(3);
+            ObserverSettings.SharedInstance.NotifyOnLogIn = playerEventsCheckedListBox.GetItemChecked(4);
+            ObserverSettings.SharedInstance.NotifyOnLogOut = playerEventsCheckedListBox.GetItemChecked(5);
+
+            ObserverSettings.SharedInstance.NotifyOnBotStart = botEventsCheckedListBox.GetItemChecked(0);
+            ObserverSettings.SharedInstance.NotifyOnBotStop = botEventsCheckedListBox.GetItemChecked(1);
+
+            ObserverSettings.SharedInstance.Save();
+            DialogResult = System.Windows.Forms.DialogResult.OK;
         }
+
         #endregion
 
         #region CustomUX

@@ -11,15 +11,15 @@ namespace Observer.Events
 {
     public class EventQueue : IEventQueue
     {
-        private IList<IObserver<IEnumerable<IEvent>>> _observers;
-        private Queue<IEvent> _events;
+        private IList<IObserver<IEnumerable<Event>>> _observers;
+        private Queue<Event> _events;
         private DateTime _timeLastEmptied;
         private Timer _timer;
 
         public EventQueue()
         {
-            _observers = new List<IObserver<IEnumerable<IEvent>>>();
-            _events = new Queue<IEvent>();
+            _observers = new List<IObserver<IEnumerable<Event>>>();
+            _events = new Queue<Event>();
             _timeLastEmptied = DateTime.MinValue;
 
             // TODO: Pull from settings
@@ -40,19 +40,22 @@ namespace Observer.Events
                     observer.OnNext(_events);
                 }
 
-                _events = new Queue<IEvent>();
+                _events = new Queue<Event>();
             }
         }
 
-        public void Enqueue(IEvent event_)
+        public void EnqueueIfEnabled(Event event_)
         {
-            _events.Enqueue(event_);
+            if (event_.Enabled)
+            {
+                _events.Enqueue(event_);
+            }
         }
 
-        public IDisposable Subscribe(IObserver<IEnumerable<IEvent>> observer)
+        public IDisposable Subscribe(IObserver<IEnumerable<Event>> observer)
         {
             _observers.Add(observer);
-            return new Unsubscriber<IEnumerable<IEvent>>(_observers, observer);
+            return new Unsubscriber<IEnumerable<Event>>(_observers, observer);
         }
     }
 }
