@@ -24,10 +24,10 @@ using Styx.WoWInternals.World;
 
 namespace Observer
 {
-    public partial class Settings : Form
+    public partial class SettingsForm : Form
     {
         #region FormInitialize
-        public Settings()
+        public SettingsForm()
         {
             InitializeComponent();
 

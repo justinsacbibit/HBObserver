@@ -8,7 +8,7 @@ namespace Observer.Events
 {
     public interface IEvent
     {
-        string Name { get; }
         string Message { get; }
+        string Details { get; }
     }
 }

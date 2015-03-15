@@ -9,7 +9,7 @@ using System.Timers;
 
 namespace Observer.Events
 {
-    public class EventQueue : IObservable<IEnumerable<IEvent>>
+    public class EventQueue : IEventQueue
     {
         private IList<IObserver<IEnumerable<IEvent>>> _observers;
         private Queue<IEvent> _events;

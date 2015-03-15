@@ -1,4 +1,7 @@
-﻿using Observer.Infrastructure;
+﻿using Observer.Channels;
+using Observer.Channels.Pushbullet;
+using Observer.Events;
+using Observer.Infrastructure;
 using Styx;
 using Styx.Common;
 using Styx.CommonBot;
@@ -39,14 +42,17 @@ namespace Observer
         #region Properties
 
         private static LocalPlayer Me { get { return StyxWoW.Me; } }
-        private Form _SettingsForm { get; set; }
-        private bool _PluginEnabled { get { return PluginManager.Plugins.Find(x => x.Name == Name).Enabled; } }
-        private bool _LoggedIn { get; set; }
+        private Form _settingsForm { get; set; }
+        private bool _pluginEnabled { get { return PluginManager.Plugins.Find(x => x.Name == Name).Enabled; } }
+        private bool _loggedIn { get; set; }
 
         // Ten seconds before adding a new event of the same type
-        private readonly TimeSpan _GeneralTimeInterval = new TimeSpan(0, 0, 10);
+        private readonly TimeSpan _generalTimeInterval = new TimeSpan(0, 0, 10);
 
-        private DateTime _LastStuckTime = DateTime.MinValue;
+        private DateTime _lastStuckTime = DateTime.MinValue;
+
+        private IList<Channel> _channels { get; set; }
+        private IEventQueue _eventQueue { get; set; }
 
         #endregion
 
@@ -54,35 +60,41 @@ namespace Observer
 
         public ObserverPlugin()
         {
-            this._SettingsForm = new Settings();
-            this._LoggedIn = StyxWoW.IsInGame;
+            this._settingsForm = new SettingsForm();
+            this._loggedIn = StyxWoW.IsInGame;
+            this._eventQueue = new EventQueue();
+            this._channels = new List<Channel>();
 
-            if (_PluginEnabled)
+            Channel channel = new PushbulletChannel("gMFk52PIPaUQDDy6FKIBFyM5iFl4Dhkw");
+            this._channels.Add(channel);
+            this._eventQueue.Subscribe(channel);
+
+            if (_pluginEnabled)
             {
                 OnEnable();
             }
         }
 
-        private void Dispose()
-        {
-            try
-            {
-                this._SettingsForm.Dispose();
-                this._SettingsForm = null;
-            }
-            catch (Exception e)
-            {
-                Logger.Log(e.Message);
-            }
-        }
+        //private void Dispose()
+        //{
+        //    try
+        //    {
+        //        this._settingsForm.Dispose();
+        //        this._settingsForm = null;
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        Logger.Log(e.Message);
+        //    }
+        //}
 
         /// <summary>
         /// Called when user clicks Settings button
         /// </summary>
         public override void OnButtonPress()
         {
-            this._SettingsForm.Show();
-            this._SettingsForm.Focus();
+            this._settingsForm.Show();
+            this._settingsForm.Focus();
         }
 
         public override void OnEnable()
@@ -99,15 +111,15 @@ namespace Observer
 
         public override void Pulse()
         {
-            if (_LoggedIn && !StyxWoW.IsInGame)
+            if (_loggedIn && !StyxWoW.IsInGame)
             {
-                _LoggedIn = false;
+                _loggedIn = false;
 
                 // TODO: Send event
             }
-            else if (!_LoggedIn && StyxWoW.IsInGame)
+            else if (!_loggedIn && StyxWoW.IsInGame)
             {
-                _LoggedIn = true;
+                _loggedIn = true;
 
                 // TODO: Send event
             }
@@ -151,12 +163,12 @@ namespace Observer
 
         private void BotEvents_OnBotStopped(EventArgs args)
         {
-            // TODO: Send event
+            _eventQueue.Enqueue(new BotStoppedEvent());
         }
 
         private void BotEvents_OnBotStarted(EventArgs args)
         {
-            // TODO: Send event
+            _eventQueue.Enqueue(new BotStartedEvent());
         }
 
         private void PlayerEvents_OnLevelUp(BotEvents.Player.LevelUpEventArgs args)
@@ -168,10 +180,10 @@ namespace Observer
         {
             foreach (Logging.LogMessage message in messages)
             {
-                bool sendStuckEvent = DateTime.Now - _LastStuckTime > _GeneralTimeInterval && message.Message.Contains("We are stuck!");
+                bool sendStuckEvent = DateTime.Now - _lastStuckTime > _generalTimeInterval && message.Message.Contains("We are stuck!");
                 if (sendStuckEvent)
                 {
-                    _LastStuckTime = DateTime.Now;
+                    _lastStuckTime = DateTime.Now;
 
                     // TODO: send event
                 }
