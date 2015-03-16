@@ -10,9 +10,7 @@ namespace Observer.Events
     // To add a new event:
     // 1. Add identifier to Event
     // 2. Add property to ObserverSettings
-    // 3. Add to SettingsForm on designer
-    // 4. Add "binding" to SettingsForm code
-    // 5. Enqueue the event
+    // 3. Enqueue the event
 
     public class Event
     {

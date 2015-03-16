@@ -11,14 +11,14 @@ namespace Observer.Events
 {
     public class EventQueue : IEventQueue
     {
-        private IList<IObserver<IEnumerable<Event>>> _observers;
+        private IList<IObserver<EventBatch>> _observers;
         private Queue<Event> _events;
         private DateTime _timeLastEmptied;
         private Timer _timer;
 
         public EventQueue()
         {
-            _observers = new List<IObserver<IEnumerable<Event>>>();
+            _observers = new List<IObserver<EventBatch>>();
             _events = new Queue<Event>();
             _timeLastEmptied = DateTime.MinValue;
 
@@ -37,7 +37,7 @@ namespace Observer.Events
             {
                 foreach (var observer in _observers)
                 {
-                    observer.OnNext(_events);
+                    observer.OnNext(new EventBatch(_events));
                 }
 
                 _events = new Queue<Event>();
@@ -52,10 +52,10 @@ namespace Observer.Events
             }
         }
 
-        public IDisposable Subscribe(IObserver<IEnumerable<Event>> observer)
+        public IDisposable Subscribe(IObserver<EventBatch> observer)
         {
             _observers.Add(observer);
-            return new Unsubscriber<IEnumerable<Event>>(_observers, observer);
+            return new Unsubscriber<EventBatch>(_observers, observer);
         }
     }
 }

@@ -22,7 +22,7 @@ namespace Observer.Channels.Pushbullet
             _accessToken = accessToken;
         }
 
-        protected async override Task<Exception> SendMessage(string title, string message)
+        protected async override Task<Exception> SendEventBatch(EventBatch batch)
         {
             WebRequest request = WebRequest.CreateHttp("https://api.pushbullet.com/v2/pushes");
             request.Method = "POST";
@@ -32,8 +32,8 @@ namespace Observer.Channels.Pushbullet
             var postData = new 
             {
                 type = "note",
-                title = title,
-                body = message
+                title = batch.Title,
+                body = batch.Message
             };
 
             request.SetBody(postData);

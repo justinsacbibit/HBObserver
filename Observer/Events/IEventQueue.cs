@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Observer.Events
 {
-    public interface IEventQueue : IObservable<IEnumerable<Event>>
+    public interface IEventQueue : IObservable<EventBatch>
     {
         void EnqueueIfEnabled(Event event_);
     }

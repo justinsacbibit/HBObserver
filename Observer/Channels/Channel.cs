@@ -43,16 +43,12 @@ namespace Observer.Channels
 
         public async void OnNext(EventBatch batch)
         {
-            string hash = batch.Hash;
-            string title = batch.Title;
-            string message = batch.Message;
+            Logger.Log("{0}: {1}\n{2}", batch.Hash, batch.Title, batch.Message);
 
-            Logger.Log("{0}: {1}\n{2}", hash, title, message);
-
-            Exception e = await SendMessage(title, message);
+            Exception e = await SendEventBatch(batch);
             if (e != null)
             {
-                Logger.Log("Observer failed to send message {0}", hash);
+                Logger.Log("Observer failed to send message {0}", batch.Hash);
                 foreach (var observer in _exceptionObservers)
                 {
                     observer.OnError(e);
@@ -60,6 +56,6 @@ namespace Observer.Channels
             }
         }
 
-        protected abstract Task<Exception> SendMessage(string title, string message);
+        protected abstract Task<Exception> SendEventBatch(EventBatch batch);
     }
 }

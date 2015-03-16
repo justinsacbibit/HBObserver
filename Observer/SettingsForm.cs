@@ -25,6 +25,7 @@ using Styx.WoWInternals.World;
 using Observer.Settings;
 using Observer.Infrastructure;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace Observer
 {
@@ -66,12 +67,37 @@ namespace Observer
 
             rtfAbout.Rtf = Resources.About;
 
+            InitMap();
             InitSettings();
         }
 
         #endregion
 
         #region Settings
+
+        private IDictionary<EventType, CheckedListBox> _eventTypeToListBoxMap;
+        private IEnumerable<EventProperty> _eventProperties;
+        private IDictionary<EventProperty, Tuple<CheckedListBox, int>> _eventPropertyToCheckboxMap;
+
+        private void InitMap()
+        {
+            _eventTypeToListBoxMap = new Dictionary<EventType, CheckedListBox>()
+            {
+                { EventType.Bot, botEventsCheckedListBox },
+                { EventType.Chat, chatEventsCheckedListBox },
+                { EventType.Player, playerEventsCheckedListBox }
+            };
+        }
+
+        private class EventProperty
+        {
+            public EventProperty() { }
+
+            public PropertyInfo Property { get; set; }
+            public EventTypeAttribute TypeAttribute { get; set; }
+            public EventIdentifierAttribute IdentifierAttribute { get; set; }
+            public SettingsTextAttribute TextAttribute { get; set; }
+        }
 
         /// <summary>
         /// Load any settings here
@@ -82,19 +108,46 @@ namespace Observer
             pushbulletEnabledCheckbox.Checked = ObserverSettings.SharedInstance.PushbulletEnabled;
             pushbulletTextBox.Text = ObserverSettings.SharedInstance.PushbulletAccessToken;
 
-            // Events
-            chatEventsCheckedListBox.SetItemChecked(0, ObserverSettings.SharedInstance.NotifyOnWhisper);
-            chatEventsCheckedListBox.SetItemChecked(1, ObserverSettings.SharedInstance.NotifyOnBNWhisper);
+            // Get all properties from ObserverSettings.SharedInstance with the following attributes:
+            // EventTypeAttribute, EventIdentifierAttribute, SettingsTextAttribute
+            _eventProperties = from p in ObserverSettings.SharedInstance.GetType().GetProperties()
+                               let typeAttr = p.GetCustomAttributes(typeof(EventTypeAttribute), true)
+                               let idAttr = p.GetCustomAttributes(typeof(EventIdentifierAttribute), true)
+                               let textAttr = p.GetCustomAttributes(typeof(SettingsTextAttribute), true)
+                               where typeAttr.Length == 1 && idAttr.Length == 1 && textAttr.Length == 1
+                               orderby (textAttr.First() as SettingsTextAttribute).Value
+                               select new EventProperty()
+                               {
+                                   Property = p,
+                                   TypeAttribute = typeAttr.First() as EventTypeAttribute,
+                                   IdentifierAttribute = idAttr.First() as EventIdentifierAttribute,
+                                   TextAttribute = textAttr.First() as SettingsTextAttribute
+                               };
 
-            playerEventsCheckedListBox.SetItemChecked(0, ObserverSettings.SharedInstance.NotifyOnBattlegroundEnter);
-            playerEventsCheckedListBox.SetItemChecked(1, ObserverSettings.SharedInstance.NotifyOnBattlegroundExit);
-            playerEventsCheckedListBox.SetItemChecked(2, ObserverSettings.SharedInstance.NotifyOnDeath);
-            playerEventsCheckedListBox.SetItemChecked(3, ObserverSettings.SharedInstance.NotifyOnLevelUp);
-            playerEventsCheckedListBox.SetItemChecked(4, ObserverSettings.SharedInstance.NotifyOnLogIn);
-            playerEventsCheckedListBox.SetItemChecked(5, ObserverSettings.SharedInstance.NotifyOnLogOut);
+            var typeCounts = new Dictionary<EventType, int>();
+            _eventPropertyToCheckboxMap = new Dictionary<EventProperty, Tuple<CheckedListBox, int>>();
 
-            botEventsCheckedListBox.SetItemChecked(0, ObserverSettings.SharedInstance.NotifyOnBotStart);
-            botEventsCheckedListBox.SetItemChecked(1, ObserverSettings.SharedInstance.NotifyOnBotStop);
+            foreach (var eventProperty in _eventProperties)
+            {
+                EventType eventType = eventProperty.TypeAttribute.Value;
+
+                if (!typeCounts.ContainsKey(eventType))
+                {
+                    typeCounts[eventType] = 0;
+                }
+
+                // Get the appropriate checked list box for this event type
+                var checkedListBox = _eventTypeToListBoxMap[eventType];
+                int count = typeCounts[eventType];
+
+                // Add checkboxes
+                checkedListBox.Items.Add(eventProperty.TextAttribute.Value, (bool)eventProperty.Property.GetValue(ObserverSettings.SharedInstance, null));
+
+                // Keep track of which properties map to which checkboxes for saving purposes
+                _eventPropertyToCheckboxMap[eventProperty] = new Tuple<CheckedListBox, int>(checkedListBox, count);
+
+                ++typeCounts[eventType];
+            }
         }
 
         /// <summary>
@@ -105,18 +158,12 @@ namespace Observer
             ObserverSettings.SharedInstance.PushbulletEnabled = pushbulletEnabledCheckbox.Checked;
             ObserverSettings.SharedInstance.PushbulletAccessToken = pushbulletTextBox.Text;
 
-            ObserverSettings.SharedInstance.NotifyOnWhisper = chatEventsCheckedListBox.GetItemChecked(0);
-            ObserverSettings.SharedInstance.NotifyOnBNWhisper = chatEventsCheckedListBox.GetItemChecked(1);
-
-            ObserverSettings.SharedInstance.NotifyOnBattlegroundEnter = playerEventsCheckedListBox.GetItemChecked(0);
-            ObserverSettings.SharedInstance.NotifyOnBattlegroundExit = playerEventsCheckedListBox.GetItemChecked(1);
-            ObserverSettings.SharedInstance.NotifyOnDeath = playerEventsCheckedListBox.GetItemChecked(2);
-            ObserverSettings.SharedInstance.NotifyOnLevelUp = playerEventsCheckedListBox.GetItemChecked(3);
-            ObserverSettings.SharedInstance.NotifyOnLogIn = playerEventsCheckedListBox.GetItemChecked(4);
-            ObserverSettings.SharedInstance.NotifyOnLogOut = playerEventsCheckedListBox.GetItemChecked(5);
-
-            ObserverSettings.SharedInstance.NotifyOnBotStart = botEventsCheckedListBox.GetItemChecked(0);
-            ObserverSettings.SharedInstance.NotifyOnBotStop = botEventsCheckedListBox.GetItemChecked(1);
+            foreach (var eventProperty in _eventProperties)
+            {
+                var checkedListBoxAndIndex = _eventPropertyToCheckboxMap[eventProperty];
+                bool enabled = checkedListBoxAndIndex.Item1.GetItemChecked(checkedListBoxAndIndex.Item2);
+                eventProperty.Property.SetValue(ObserverSettings.SharedInstance, enabled);
+            }
 
             ObserverSettings.SharedInstance.Save();
             DialogResult = System.Windows.Forms.DialogResult.OK;
