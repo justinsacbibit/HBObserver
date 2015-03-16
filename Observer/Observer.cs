@@ -83,11 +83,15 @@ namespace Observer
             }
             else
             {
-                var kvp = _channels.FirstOrDefault(x => x.Key as PushbulletChannel != null);
-                if (kvp.Equals(default(KeyValuePair<Channel, IDisposable>)))
-                {
-                    return;
-                }
+                RemoveChannel<PushbulletChannel>();
+            }
+        }
+
+        private void RemoveChannel<T>() where T : class
+        {
+            var kvp = _channels.FirstOrDefault(x => x.Key as T != null);
+            if (!kvp.Equals(default(KeyValuePair<Channel, IDisposable>)))
+            {
                 kvp.Value.Dispose();
                 _channels.Remove(kvp.Key);
             }

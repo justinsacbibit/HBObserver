@@ -9,12 +9,12 @@ using System.Threading.Tasks;
 
 namespace Observer.Channels
 {
-    public abstract class Channel : IObservable<ICommand>, IObservable<Exception>, IObserver<IEnumerable<Event>>
+    public abstract class Channel : IObservable<ICommand>, IObservable<Exception>, IObserver<EventBatch>
     {
         protected IList<IObserver<ICommand>> _commandObservers;
         protected IList<IObserver<Exception>> _exceptionObservers;
 
-        public Channel()
+        protected Channel()
         {
             _commandObservers = new List<IObserver<ICommand>>();
         }
@@ -41,33 +41,11 @@ namespace Observer.Channels
             throw new NotImplementedException();
         }
 
-        public async void OnNext(IEnumerable<Event> values)
+        public async void OnNext(EventBatch batch)
         {
-            if (values.Count() <= 0)
-            {
-                return;
-            }
-
-            StringBuilder sb = null;
-            int count = 0;
-            foreach (var value in values)
-            {
-                ++count;
-
-                if (sb == null)
-                {
-                    sb = new StringBuilder(value.Message);
-                }
-                else
-                {
-                    sb.Append("\n");
-                    sb.Append(value.Message);
-                }
-            }
-
-            string hash = string.Format("{0:X}", DateTime.Now.GetHashCode());
-            string title = string.Format("{0} Observer event{1}: {2}", count, count == 1 ? "" : "s", string.Join(", ", values.Select(x => x.Identifier)));
-            string message = sb.ToString();
+            string hash = batch.Hash;
+            string title = batch.Title;
+            string message = batch.Message;
 
             Logger.Log("{0}: {1}\n{2}", hash, title, message);
 

@@ -22,11 +22,6 @@ namespace Observer.Channels.Pushbullet
             _accessToken = accessToken;
         }
 
-        protected PushbulletChannel()
-        {
-
-        }
-
         protected async override Task<Exception> SendMessage(string title, string message)
         {
             WebRequest request = WebRequest.CreateHttp("https://api.pushbullet.com/v2/pushes");
