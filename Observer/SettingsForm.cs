@@ -77,10 +77,13 @@ namespace Observer
 
         private IDictionary<EventType, CheckedListBox> _eventTypeToListBoxMap;
         private IEnumerable<EventProperty> _eventProperties;
-        private IDictionary<EventProperty, Tuple<CheckedListBox, int>> _eventPropertyToCheckboxMap;
+        private IDictionary<string, Tuple<CheckedListBox, int>> _eventPropertyToCheckboxMap;
 
         private void InitMap()
         {
+            botEventsCheckedListBox.Items.Clear();
+            chatEventsCheckedListBox.Items.Clear();
+            playerEventsCheckedListBox.Items.Clear();
             _eventTypeToListBoxMap = new Dictionary<EventType, CheckedListBox>()
             {
                 { EventType.Bot, botEventsCheckedListBox },
@@ -125,7 +128,7 @@ namespace Observer
                                };
 
             var typeCounts = new Dictionary<EventType, int>();
-            _eventPropertyToCheckboxMap = new Dictionary<EventProperty, Tuple<CheckedListBox, int>>();
+            _eventPropertyToCheckboxMap = new Dictionary<string, Tuple<CheckedListBox, int>>();
 
             foreach (var eventProperty in _eventProperties)
             {
@@ -144,7 +147,7 @@ namespace Observer
                 checkedListBox.Items.Add(eventProperty.TextAttribute.Value, (bool)eventProperty.Property.GetValue(ObserverSettings.SharedInstance, null));
 
                 // Keep track of which properties map to which checkboxes for saving purposes
-                _eventPropertyToCheckboxMap[eventProperty] = new Tuple<CheckedListBox, int>(checkedListBox, count);
+                _eventPropertyToCheckboxMap[eventProperty.Property.Name] = new Tuple<CheckedListBox, int>(checkedListBox, count);
 
                 ++typeCounts[eventType];
             }
@@ -160,7 +163,7 @@ namespace Observer
 
             foreach (var eventProperty in _eventProperties)
             {
-                var checkedListBoxAndIndex = _eventPropertyToCheckboxMap[eventProperty];
+                var checkedListBoxAndIndex = _eventPropertyToCheckboxMap[eventProperty.Property.Name];
                 bool enabled = checkedListBoxAndIndex.Item1.GetItemChecked(checkedListBoxAndIndex.Item2);
                 eventProperty.Property.SetValue(ObserverSettings.SharedInstance, enabled);
             }

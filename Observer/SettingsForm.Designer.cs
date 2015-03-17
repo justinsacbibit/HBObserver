@@ -251,7 +251,6 @@
             "Stop"});
             this.botEventsCheckedListBox.Location = new System.Drawing.Point(7, 24);
             this.botEventsCheckedListBox.Name = "botEventsCheckedListBox";
-            this.botEventsCheckedListBox.SelectionMode = System.Windows.Forms.SelectionMode.None;
             this.botEventsCheckedListBox.Size = new System.Drawing.Size(360, 118);
             this.botEventsCheckedListBox.TabIndex = 0;
             // 
@@ -278,7 +277,6 @@
             "Log out"});
             this.playerEventsCheckedListBox.Location = new System.Drawing.Point(7, 24);
             this.playerEventsCheckedListBox.Name = "playerEventsCheckedListBox";
-            this.playerEventsCheckedListBox.SelectionMode = System.Windows.Forms.SelectionMode.None;
             this.playerEventsCheckedListBox.Size = new System.Drawing.Size(274, 118);
             this.playerEventsCheckedListBox.TabIndex = 0;
             // 
@@ -301,7 +299,6 @@
             "Battle.net whisper"});
             this.chatEventsCheckedListBox.Location = new System.Drawing.Point(7, 24);
             this.chatEventsCheckedListBox.Name = "chatEventsCheckedListBox";
-            this.chatEventsCheckedListBox.SelectionMode = System.Windows.Forms.SelectionMode.None;
             this.chatEventsCheckedListBox.Size = new System.Drawing.Size(274, 118);
             this.chatEventsCheckedListBox.TabIndex = 0;
             // 
