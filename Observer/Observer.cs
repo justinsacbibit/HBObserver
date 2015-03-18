@@ -78,6 +78,11 @@ namespace Observer
         {
             if (ObserverSettings.SharedInstance.PushbulletEnabled)
             {
+                if (HasChannel<PushbulletChannel>())
+                {
+                    return;
+                }
+
                 Channel channel = new PushbulletChannel(ObserverSettings.SharedInstance.PushbulletAccessToken);
                 _channels.Add(channel, _eventQueue.Subscribe(channel));
             }
@@ -85,6 +90,11 @@ namespace Observer
             {
                 RemoveChannel<PushbulletChannel>();
             }
+        }
+
+        private bool HasChannel<T>() where T : class
+        {
+            return _channels.Any(x => x.Key as T != null);
         }
 
         private void RemoveChannel<T>() where T : class
